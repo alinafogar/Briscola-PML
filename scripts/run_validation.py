@@ -342,6 +342,8 @@ def _build_report(
         "vi": {
             "initial_elbo": posterior.elbo_history[0],
             "final_elbo": posterior.elbo_history[-1],
+            "best_elbo": posterior.best_elbo,
+            "best_step": posterior.best_step,
             "elbo_history": posterior.elbo_history,
         },
         "heldout": asdict(predictive),
@@ -397,6 +399,7 @@ def _print_report(report: dict[str, Any], output: Path) -> None:
     print()
     print(f"posterior L2 error: {theta['posterior_l2_error']:.3f}")
     print(f"ELBO: {vi['initial_elbo']:.3f} -> {vi['final_elbo']:.3f}")
+    print(f"best ELBO: {vi['best_elbo']:.3f} at step {vi['best_step']}")
     print()
     print(f"held-out loglik posterior: {heldout['posterior_log_likelihood']:.3f}")
     print(f"held-out loglik baseline:  {heldout['baseline_log_likelihood']:.3f}")

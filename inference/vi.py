@@ -38,6 +38,8 @@ class VariationalPosterior:
     std: tuple[float, ...]
     elbo_history: tuple[float, ...]
     feature_names: tuple[str, ...]
+    best_elbo: float
+    best_step: int
 
 
 def prepare_observations(
@@ -183,6 +185,10 @@ def fit_variational_posterior(
 
     optimizer = torch_module.optim.Adam((mean, log_std), lr=learning_rate)
     elbo_history: list[float] = []
+    best_elbo = -math.inf
+    best_step = 0
+    best_mean = mean.detach().clone()
+    best_log_std = log_std.detach().clone()
 
     for step_index in range(num_steps):
         optimizer.zero_grad()
@@ -196,9 +202,15 @@ def fit_variational_posterior(
             generator=generator,
             temperature=temperature,
         )
+        elbo_value = float(elbo.detach())
+        if elbo_value > best_elbo:
+            best_elbo = elbo_value
+            best_step = step_index + 1
+            best_mean = mean.detach().clone()
+            best_log_std = log_std.detach().clone()
+
         (-elbo).backward()
         optimizer.step()
-        elbo_value = float(elbo.detach())
         elbo_history.append(elbo_value)
 
         step = step_index + 1
@@ -210,10 +222,12 @@ def fit_variational_posterior(
             progress_callback(step, num_steps, elbo_value)
 
     return VariationalPosterior(
-        mean=tuple(float(value) for value in mean.detach()),
-        std=tuple(float(value) for value in log_std.detach().exp()),
+        mean=tuple(float(value) for value in best_mean),
+        std=tuple(float(value) for value in best_log_std.exp()),
         elbo_history=tuple(elbo_history),
         feature_names=feature_names,
+        best_elbo=best_elbo if elbo_history else math.nan,
+        best_step=best_step,
     )
 
 
