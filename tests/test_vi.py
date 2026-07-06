@@ -32,6 +32,9 @@ class VariationalInferenceTest(unittest.TestCase):
         self.assertEqual(len(posterior.mean), len(RANDOM_THETA))
         self.assertEqual(len(posterior.std), len(RANDOM_THETA))
         self.assertEqual(len(posterior.elbo_history), 3)
+        self.assertEqual(posterior.best_elbo, max(posterior.elbo_history))
+        self.assertGreaterEqual(posterior.best_step, 1)
+        self.assertLessEqual(posterior.best_step, 3)
 
 
 if __name__ == "__main__":
