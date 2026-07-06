@@ -174,19 +174,52 @@ def train_test_split(
     observations: Sequence[OpponentMoveObservation],
     *,
     train_fraction: float = 0.7,
+    split_unit: str = "observation",
 ) -> tuple[tuple[OpponentMoveObservation, ...], tuple[OpponentMoveObservation, ...]]:
-    """Deterministic split that preserves observation order"""
+    """Deterministic split that preserves observation order.
+
+    ``split_unit="game"`` keeps every move from the same simulated game in the
+    same partition, avoiding leakage between train and held-out data.
+    """
 
     if not 0.0 < train_fraction < 1.0:
         raise ValueError("train_fraction must be between 0 and 1")
     if len(observations) < 2:
         raise ValueError("at least two observations are required")
+    if split_unit == "game":
+        return _train_test_split_by_game(observations, train_fraction=train_fraction)
+    if split_unit != "observation":
+        raise ValueError("split_unit must be 'game' or 'observation'")
 
     split_index = max(
         1,
         min(len(observations) - 1, int(len(observations) * train_fraction)),
     )
     return tuple(observations[:split_index]), tuple(observations[split_index:])
+
+
+def _train_test_split_by_game(
+    observations: Sequence[OpponentMoveObservation],
+    *,
+    train_fraction: float,
+) -> tuple[tuple[OpponentMoveObservation, ...], tuple[OpponentMoveObservation, ...]]:
+    game_ids = tuple(dict.fromkeys(observation.game_id for observation in observations))
+    if len(game_ids) < 2:
+        raise ValueError("game split requires observations from at least two games")
+
+    split_index = max(1, min(len(game_ids) - 1, int(len(game_ids) * train_fraction)))
+    train_game_ids = set(game_ids[:split_index])
+    train = tuple(
+        observation
+        for observation in observations
+        if observation.game_id in train_game_ids
+    )
+    test = tuple(
+        observation
+        for observation in observations
+        if observation.game_id not in train_game_ids
+    )
+    return train, test
 
 
 def importance_sampling_reference(

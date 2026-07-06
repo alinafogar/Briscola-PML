@@ -78,18 +78,27 @@ THETA_PROFILES = {
 def main() -> None:
     args = _parse_args()
     feature_names = FEATURE_SETS[args.feature_set]
-    true_theta = THETA_PROFILES[args.feature_set][args.profile]
+    true_theta = _scale_theta(
+        THETA_PROFILES[args.feature_set][args.profile],
+        args.theta_scale,
+    )
 
     _print_progress(
         "starting validation "
         f"(feature_set={args.feature_set}, profile={args.profile}, "
-        f"data_source={args.data_source}, games={args.num_games}, seed={args.seed})"
+        f"data_source={args.data_source}, games={args.num_games}, "
+        f"theta_scale={args.theta_scale}, split_unit={args.split_unit}, "
+        f"seed={args.seed})"
     )
     _print_progress("collecting observations...")
     observations = _collect_validation_observations(args, true_theta, feature_names)
     _print_progress(f"collected {len(observations)} observations")
 
-    train, test = train_test_split(observations, train_fraction=args.train_fraction)
+    train, test = train_test_split(
+        observations,
+        train_fraction=args.train_fraction,
+        split_unit=args.split_unit,
+    )
     _print_progress(f"split data: {len(train)} train, {len(test)} test")
 
     _print_progress(
@@ -184,6 +193,18 @@ def _parse_args() -> argparse.Namespace:
         help="fraction of observations used for VI",
     )
     parser.add_argument(
+        "--split-unit",
+        choices=("game", "observation"),
+        default="game",
+        help="whether train/test split is done by full games or individual observations",
+    )
+    parser.add_argument(
+        "--theta-scale",
+        type=float,
+        default=1.0,
+        help="multiplier applied to the synthetic theta before generating data",
+    )
+    parser.add_argument(
         "--vi-steps",
         type=int,
         default=300,
@@ -247,6 +268,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         raise ValueError("num_games must be positive")
     if not 0.0 < args.train_fraction < 1.0:
         raise ValueError("train_fraction must be between 0 and 1")
+    if not math.isfinite(args.theta_scale) or args.theta_scale < 0.0:
+        raise ValueError("theta_scale must be a finite non-negative value")
     if args.vi_steps <= 0:
         raise ValueError("vi_steps must be positive")
     if args.learning_rate <= 0:
@@ -319,6 +342,8 @@ def _build_report(
             "feature_names": feature_names,
             "num_games": args.num_games,
             "train_fraction": args.train_fraction,
+            "split_unit": args.split_unit,
+            "theta_scale": args.theta_scale,
             "vi_steps": args.vi_steps,
             "learning_rate": args.learning_rate,
             "elbo_samples": args.elbo_samples,
@@ -381,6 +406,8 @@ def _print_report(report: dict[str, Any], output: Path) -> None:
     print(f"feature set: {config['feature_set']}")
     print(f"profile: {config['profile']}")
     print(f"data source: {config['data_source']}")
+    print(f"theta scale: {config['theta_scale']}")
+    print(f"split unit: {config['split_unit']}")
     print(
         f"observations: {data['observations']} total, "
         f"{data['train_observations']} train, "
@@ -433,6 +460,10 @@ def _json_ready(value: Any) -> Any:
 
 def _l2_norm(values: tuple[float, ...]) -> float:
     return math.sqrt(sum(value * value for value in values))
+
+
+def _scale_theta(theta: tuple[float, ...], scale: float) -> tuple[float, ...]:
+    return tuple(scale * value for value in theta)
 
 
 if __name__ == "__main__":
