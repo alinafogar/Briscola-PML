@@ -41,6 +41,27 @@ class ValidationTest(unittest.TestCase):
         self.assertEqual(len(calibration.bins), 5)
         self.assertGreater(reference.effective_sample_size, 0.0)
 
+    def test_game_split_keeps_games_disjoint(self) -> None:
+        observations = collect_observations(
+            observed_model=ThetaSoftmaxOpponent(GREEDY_POINTS_THETA, seed=1),
+            observer_model=RandomOpponent(seed=2),
+            num_games=4,
+            seed=3,
+        )
+        train, test = train_test_split(
+            observations,
+            train_fraction=0.5,
+            split_unit="game",
+        )
+
+        train_game_ids = {observation.game_id for observation in train}
+        test_game_ids = {observation.game_id for observation in test}
+
+        self.assertEqual(len(train) + len(test), len(observations))
+        self.assertTrue(train_game_ids)
+        self.assertTrue(test_game_ids)
+        self.assertTrue(train_game_ids.isdisjoint(test_game_ids))
+
     def test_matched_model_generator_produces_compatible_observations(self) -> None:
         observations = collect_matched_model_observations(
             GREEDY_POINTS_THETA,

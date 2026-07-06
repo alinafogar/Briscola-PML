@@ -32,6 +32,8 @@ RUN_FIELDNAMES = (
     "feature_set",
     "profile",
     "seed",
+    "theta_scale",
+    "split_unit",
     "feature_count",
     "observations",
     "train_observations",
@@ -161,6 +163,18 @@ def _parse_args() -> argparse.Namespace:
         help="fraction of observations used for VI",
     )
     parser.add_argument(
+        "--split-unit",
+        choices=("game", "observation"),
+        default="game",
+        help="whether train/test split is done by full games or individual observations",
+    )
+    parser.add_argument(
+        "--theta-scale",
+        type=float,
+        default=1.0,
+        help="multiplier applied to each synthetic theta before generating data",
+    )
+    parser.add_argument(
         "--vi-steps",
         type=int,
         default=1000,
@@ -228,6 +242,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         raise ValueError("num_games must be positive")
     if not 0.0 < args.train_fraction < 1.0:
         raise ValueError("train_fraction must be between 0 and 1")
+    if not math.isfinite(args.theta_scale) or args.theta_scale < 0.0:
+        raise ValueError("theta_scale must be a finite non-negative value")
     if args.vi_steps <= 0:
         raise ValueError("vi_steps must be positive")
     if args.learning_rate <= 0:
@@ -253,6 +269,8 @@ def _iter_run_specs(args: argparse.Namespace) -> tuple[SimpleNamespace, ...]:
             data_source=args.data_source,
             num_games=args.num_games,
             train_fraction=args.train_fraction,
+            split_unit=args.split_unit,
+            theta_scale=args.theta_scale,
             vi_steps=args.vi_steps,
             learning_rate=args.learning_rate,
             elbo_samples=args.elbo_samples,
@@ -273,7 +291,10 @@ def _run_validation_case(
     show_vi_progress: bool,
 ) -> dict[str, Any]:
     feature_names = validation.FEATURE_SETS[spec.feature_set]
-    true_theta = validation.THETA_PROFILES[spec.feature_set][spec.profile]
+    true_theta = validation._scale_theta(
+        validation.THETA_PROFILES[spec.feature_set][spec.profile],
+        spec.theta_scale,
+    )
 
     observations = validation._collect_validation_observations(
         spec,
@@ -283,6 +304,7 @@ def _run_validation_case(
     train, test = train_test_split(
         observations,
         train_fraction=spec.train_fraction,
+        split_unit=spec.split_unit,
     )
     progress_callback = validation._print_vi_progress if show_vi_progress else None
     posterior = fit_variational_posterior(
@@ -322,6 +344,8 @@ def _run_validation_case(
         "feature_set": spec.feature_set,
         "profile": spec.profile,
         "seed": spec.seed,
+        "theta_scale": spec.theta_scale,
+        "split_unit": spec.split_unit,
         "feature_count": len(feature_names),
         "observations": len(observations),
         "train_observations": len(train),
@@ -367,6 +391,8 @@ def _write_outputs(
             "data_source": args.data_source,
             "num_games": args.num_games,
             "train_fraction": args.train_fraction,
+            "split_unit": args.split_unit,
+            "theta_scale": args.theta_scale,
             "vi_steps": args.vi_steps,
             "learning_rate": args.learning_rate,
             "elbo_samples": args.elbo_samples,

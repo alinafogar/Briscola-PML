@@ -131,6 +131,8 @@ python3 -m unittest
 ```bash
 python3 scripts/run_validation.py \
   --num-games 100 \
+  --theta-scale 1.0 \
+  --split-unit game \
   --vi-steps 300 \
   --elbo-samples 2 \
   --importance-samples 200 \
@@ -147,6 +149,16 @@ The report includes:
 - calibration curve and ECE;
 - importance-sampling effective sample size.
 
+Useful validation flags:
+
+- `--theta-scale`: multiplies the synthetic theta before generating games.
+  Values greater than `1.0` make the synthetic opponent style sharper; values
+  below `1.0` make it noisier.
+- `--split-unit game|observation`: controls train/test splitting. The default
+  `game` keeps all moves from the same game in the same partition, which avoids
+  leakage between train and held-out data. `observation` splits individual
+  moves and is useful for small smoke tests.
+
 ## Run A Comparison Grid
 
 ```bash
@@ -155,6 +167,8 @@ python3 scripts/run_comparison.py \
   --profiles aggressive conservative greedy_points \
   --seeds 0 1 2 \
   --num-games 20 \
+  --theta-scale 1.0 \
+  --split-unit game \
   --vi-steps 300 \
   --importance-samples 200
 ```
