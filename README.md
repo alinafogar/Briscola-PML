@@ -183,12 +183,4 @@ Install dependencies from:
 pip install -r requirements.txt
 ```
 
-Do not commit local reference files or generated reports:
 
-- PDF papers;
-- `AGENTS.md`;
-- `formulazione_progetto.md`;
-- generated files under `artifacts/`, except `.gitkeep`.
-
-The mathematical project formulation remains the source of truth for modelling
-assumptions and limitations.
