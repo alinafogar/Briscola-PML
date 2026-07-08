@@ -3,17 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import math
 import random
 
 from experiments.episode_collection import OpponentMoveObservation, collect_observations
-from game import Card
 from inference import (
-    compatible_unknown_cards,
     fit_variational_posterior,
-    known_opponent_cards,
-    local_card_probability,
     sequential_log_likelihood,
 )
 from opponents import FEATURE_NAMES, RandomOpponent, ThetaSoftmaxOpponent, zero_theta
@@ -44,44 +40,6 @@ class PredictiveResult:
     num_observations: int
     posterior_samples: int
     likelihood: str = "posterior_predictive_sequential"
-
-
-def collect_matched_model_observations(
-    theta: Sequence[float],
-    *,
-    feature_names: Sequence[str] = FEATURE_NAMES,
-    num_games: int,
-    seed: int = 0,
-    observer_player: int = 0,
-    observed_player: int = 1,
-    theta_name: str | None = "matched_model",
-) -> tuple[OpponentMoveObservation, ...]:
-    """Generate local observations from the same hand belief used by inference."""
-
-    feature_names = tuple(feature_names)
-    if len(theta) != len(feature_names):
-        raise ValueError("theta length must match feature_names length")
-
-    contexts = collect_observations(
-        observed_model=RandomOpponent(seed=seed + 1),
-        observer_model=RandomOpponent(seed=seed + 2),
-        num_games=num_games,
-        seed=seed + 3,
-        observer_player=observer_player,
-        observed_player=observed_player,
-        theta_name="context",
-    )
-    rng = random.Random(seed + 4)
-    return tuple(
-        _resample_observation_from_local_belief(
-            observation,
-            theta,
-            feature_names=feature_names,
-            rng=rng,
-            theta_name=theta_name,
-        )
-        for observation in contexts
-    )
 
 
 def run_recovery_experiment(
@@ -282,87 +240,6 @@ def _logmeanexp(values: Sequence[float]) -> float:
     return maximum + math.log(
         sum(math.exp(value - maximum) for value in values) / len(values)
     )
-
-
-def _resample_observation_from_local_belief(
-    observation: OpponentMoveObservation,
-    theta: Sequence[float],
-    *,
-    feature_names: Sequence[str],
-    rng: random.Random,
-    theta_name: str | None,
-) -> OpponentMoveObservation:
-    hand = _sample_uniform_compatible_hand(observation, rng)
-    chosen_card = _sample_card_from_hand(
-        hand,
-        observation,
-        theta,
-        feature_names=feature_names,
-        rng=rng,
-    )
-    return replace(
-        observation,
-        opponent_hand=hand,
-        legal_cards=hand,
-        chosen_card=chosen_card,
-        theta_name=theta_name,
-    )
-
-
-def _sample_uniform_compatible_hand(
-    observation: OpponentMoveObservation,
-    rng: random.Random,
-) -> tuple[Card, ...]:
-    unknown_cards = compatible_unknown_cards(
-        observation.public_state,
-        observation.observer_hand,
-        opponent_player=observation.player,
-    )
-    required_cards = known_opponent_cards(
-        observation.public_state,
-        observation.observer_hand,
-        opponent_player=observation.player,
-    )
-    hand_size = observation.public_state.hand_sizes[observation.player]
-    if hand_size < 0:
-        raise ValueError("hand size cannot be negative")
-    if hand_size > len(unknown_cards):
-        raise ValueError("no compatible hands are available for this observation")
-    if any(card not in unknown_cards for card in required_cards):
-        raise ValueError("required public cards are not compatible with this observation")
-    draw_count = hand_size - len(required_cards)
-    if draw_count < 0:
-        raise ValueError("too many required public cards for this hand size")
-    remaining_cards = tuple(card for card in unknown_cards if card not in required_cards)
-    return (*required_cards, *rng.sample(remaining_cards, draw_count))
-
-
-def _sample_card_from_hand(
-    hand: tuple[Card, ...],
-    observation: OpponentMoveObservation,
-    theta: Sequence[float],
-    *,
-    feature_names: Sequence[str],
-    rng: random.Random,
-) -> Card:
-    probabilities = tuple(
-        local_card_probability(
-            card,
-            hand,
-            observation.public_state,
-            theta,
-            player=observation.player,
-            feature_names=feature_names,
-        )
-        for card in hand
-    )
-    threshold = rng.random()
-    cumulative = 0.0
-    for card, probability in zip(hand, probabilities):
-        cumulative += probability
-        if threshold <= cumulative:
-            return card
-    return hand[-1]
 
 
 def _safe_mean_log_probability(log_likelihood: float, count: int) -> float:
