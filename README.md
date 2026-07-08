@@ -80,7 +80,7 @@ means that we learn:
 
 - a posterior mean for every feature weight;
 - a posterior standard deviation for every feature weight;
-- the best posterior found during optimization, according to the ELBO.
+- the final posterior after the VI optimization.
 
 The prior over `theta` is a zero-mean Gaussian.
 
@@ -168,7 +168,7 @@ The report tells us:
 - the true synthetic `theta`;
 - the posterior mean and standard deviation learned by VI;
 - the per-feature error and L2 recovery error;
-- the ELBO trajectory and the best ELBO step;
+- the ELBO trajectory;
 - held-out sequential log-likelihood against a zero-theta baseline.
 
 Useful flags:

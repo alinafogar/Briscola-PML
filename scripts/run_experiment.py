@@ -114,8 +114,6 @@ RUN_FIELDNAMES = (
     "heldout_mean_logp_delta",
     "initial_elbo",
     "final_elbo",
-    "best_elbo",
-    "best_step",
 )
 JSON_CSV_FIELDS = {
     "feature_names",
@@ -129,7 +127,6 @@ SUMMARY_METRICS = (
     "heldout_loglik_delta",
     "heldout_mean_logp_delta",
     "final_elbo",
-    "best_elbo",
 )
 
 
@@ -508,8 +505,6 @@ def _run_case(
         ),
         "initial_elbo": posterior.elbo_history[0],
         "final_elbo": posterior.elbo_history[-1],
-        "best_elbo": posterior.best_elbo,
-        "best_step": posterior.best_step,
         "elbo_history": posterior.elbo_history,
     }
 
@@ -566,8 +561,6 @@ def _build_single_report(spec: ExperimentSpec, row: dict[str, Any]) -> dict[str,
         "vi": {
             "initial_elbo": row["initial_elbo"],
             "final_elbo": row["final_elbo"],
-            "best_elbo": row["best_elbo"],
-            "best_step": row["best_step"],
             "elbo_history": row["elbo_history"],
         },
         "heldout": {
@@ -804,7 +797,6 @@ def _print_single_report(report: dict[str, Any], output: Path) -> None:
     print()
     print(f"posterior L2 error: {theta['posterior_l2_error']:.3f}")
     print(f"ELBO: {vi['initial_elbo']:.3f} -> {vi['final_elbo']:.3f}")
-    print(f"best ELBO: {vi['best_elbo']:.3f} at step {vi['best_step']}")
     print()
     print(f"held-out loglik posterior: {heldout['posterior_log_likelihood']:.3f}")
     print(f"held-out loglik baseline:  {heldout['baseline_log_likelihood']:.3f}")
