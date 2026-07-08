@@ -62,8 +62,6 @@ class VariationalPosterior:
     std: tuple[float, ...]
     elbo_history: tuple[float, ...]
     feature_names: tuple[str, ...]
-    best_elbo: float
-    best_step: int
     training_likelihood: str = "sequential"
 
 
@@ -338,10 +336,6 @@ def fit_variational_posterior(
 
     optimizer = torch_module.optim.Adam((mean, log_std), lr=learning_rate)
     elbo_history: list[float] = []
-    best_elbo = -math.inf
-    best_step = 0
-    best_mean = mean.detach().clone()
-    best_log_std = log_std.detach().clone()
 
     for step_index in range(num_steps):
         optimizer.zero_grad()
@@ -356,24 +350,18 @@ def fit_variational_posterior(
             temperature=temperature,
         )
         elbo_value = float(elbo.detach())
-        if elbo_value > best_elbo:
-            # Keep the best iterate; stochastic ELBO can get worse near the end.
-            best_elbo = elbo_value
-            best_step = step_index + 1
-            best_mean = mean.detach().clone()
-            best_log_std = log_std.detach().clone()
 
         (-elbo).backward()
         optimizer.step()
         elbo_history.append(elbo_value)
 
+    final_mean = mean.detach()
+    final_log_std = log_std.detach()
     return VariationalPosterior(
-        mean=tuple(float(value) for value in best_mean),
-        std=tuple(float(value) for value in best_log_std.exp()),
+        mean=tuple(float(value) for value in final_mean),
+        std=tuple(float(value) for value in final_log_std.exp()),
         elbo_history=tuple(elbo_history),
         feature_names=feature_names,
-        best_elbo=best_elbo if elbo_history else math.nan,
-        best_step=best_step,
         training_likelihood="sequential",
     )
 
