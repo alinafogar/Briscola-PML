@@ -10,7 +10,6 @@ from experiments.episode_collection import (
 from experiments.validation import (
     PredictiveResult,
     RecoveryResult,
-    collect_matched_model_observations,
     heldout_predictive_evaluation,
     run_recovery_experiment,
     train_test_split,
@@ -22,7 +21,6 @@ __all__ = [
     "PredictiveResult",
     "RecoveryResult",
     "SyntheticGameResult",
-    "collect_matched_model_observations",
     "collect_observations",
     "heldout_predictive_evaluation",
     "play_synthetic_game",
