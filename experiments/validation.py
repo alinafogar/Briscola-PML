@@ -178,9 +178,12 @@ def heldout_predictive_evaluation(
     seed: int = 0,
     baseline_theta: Sequence[float] | None = None,
     feature_names: Sequence[str] = FEATURE_NAMES,
+    temperature: float = 1.0,
 ) -> PredictiveResult:
     """Compare the VI posterior predictive against a zero-theta baseline."""
 
+    if temperature <= 0.0:
+        raise ValueError("temperature must be positive")
     feature_names = tuple(feature_names)
     posterior_mean = _checked_theta(
         posterior_mean,
@@ -216,6 +219,7 @@ def heldout_predictive_evaluation(
                 observations,
                 theta,
                 feature_names=feature_names,
+                temperature=temperature,
             )
             for theta in theta_samples
         )
@@ -224,6 +228,7 @@ def heldout_predictive_evaluation(
         observations,
         baseline_theta,
         feature_names=feature_names,
+        temperature=temperature,
     )
     count = len(observations)
     return PredictiveResult(
