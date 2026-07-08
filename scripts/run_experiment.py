@@ -41,6 +41,10 @@ from opponents import (  # noqa: E402
     STYLE_CONSERVATIVE_THETA,
     STYLE_FEATURE_NAMES,
     STYLE_GREEDY_POINTS_THETA,
+    INTERACTIVE_AGGRESSIVE_THETA,
+    INTERACTIVE_CONSERVATIVE_THETA,
+    INTERACTIVE_FEATURE_NAMES,
+    INTERACTIVE_GREEDY_POINTS_THETA,
     ThetaSoftmaxOpponent,
     TRUMP_COUNT_AGGRESSIVE_THETA,
     TRUMP_COUNT_CONSERVATIVE_THETA,
@@ -54,6 +58,7 @@ FEATURE_SETS = {
     "core": CORE_FEATURE_NAMES,
     "extended": EXTENDED_FEATURE_NAMES,
     "style": STYLE_FEATURE_NAMES,
+    "interactive": INTERACTIVE_FEATURE_NAMES,
     "trump_count": TRUMP_COUNT_FEATURE_NAMES,
 }
 
@@ -78,6 +83,11 @@ THETA_PROFILES = {
         "conservative": STYLE_CONSERVATIVE_THETA,
         "greedy_points": STYLE_GREEDY_POINTS_THETA,
     },
+    "interactive": {
+        "aggressive": INTERACTIVE_AGGRESSIVE_THETA,
+        "conservative": INTERACTIVE_CONSERVATIVE_THETA,
+        "greedy_points": INTERACTIVE_GREEDY_POINTS_THETA,
+    },
     "trump_count": {
         "aggressive": TRUMP_COUNT_AGGRESSIVE_THETA,
         "conservative": TRUMP_COUNT_CONSERVATIVE_THETA,
@@ -85,7 +95,7 @@ THETA_PROFILES = {
     },
 }
 
-DEFAULT_FEATURE_SETS = ("style", "core", "compact", "trump_count", "extended")
+DEFAULT_FEATURE_SETS = ("style", "core", "compact", "interactive", "trump_count", "extended")
 DEFAULT_PROFILES = ("aggressive", "conservative", "greedy_points")
 DEFAULT_TRAIN_FRACTION = 0.75
 DEFAULT_LEARNING_RATE = 0.03
@@ -852,4 +862,6 @@ def _scale_theta(theta: tuple[float, ...], scale: float) -> tuple[float, ...]:
 
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.set_start_method("spawn", force=True)
     main()

@@ -60,7 +60,18 @@ EXTENDED_FEATURE_NAMES: tuple[str, ...] = (
     "higher_trumps_unseen_normalized",
 )
 
-FEATURE_NAMES = CORE_FEATURE_NAMES
+INTERACTIVE_FEATURE_NAMES: tuple[str, ...] = (
+    "is_trump",
+    "points_normalized",
+    "wins_current_trick",
+    "lowest_card_in_suit",
+    "trump_progress",
+    "points_progress",
+    "trump_on_table_points",
+    "greedy_take",
+)
+
+FEATURE_NAMES = INTERACTIVE_FEATURE_NAMES
 
 
 def card_features(
@@ -128,6 +139,11 @@ def feature_dict(
         _higher_trumps_unseen(card, public_state, observed_cards) / TOTAL_TRUMPS
     )
 
+    trump_progress = is_trump * played_cards_normalized
+    points_progress = points_normalized * played_cards_normalized
+    trump_on_table_points = is_trump * current_trick_points_normalized
+    greedy_take = wins_current_trick * current_trick_points_normalized
+
     return {
         "is_trump": is_trump,
         "points_normalized": points_normalized,
@@ -151,6 +167,10 @@ def feature_dict(
         "late_game": late_game,
         "higher_same_suit_unseen_normalized": higher_same_suit_unseen_normalized,
         "higher_trumps_unseen_normalized": higher_trumps_unseen_normalized,
+        "trump_progress": trump_progress,
+        "points_progress": points_progress,
+        "trump_on_table_points": trump_on_table_points,
+        "greedy_take": greedy_take,
     }
 
 

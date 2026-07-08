@@ -10,8 +10,10 @@ from typing import Protocol, Sequence
 from game import Card, PlayerView
 from opponents.features import (
     COMPACT_FEATURE_NAMES,
+    CORE_FEATURE_NAMES,
     EXTENDED_FEATURE_NAMES,
     FEATURE_NAMES,
+    INTERACTIVE_FEATURE_NAMES,
     STYLE_FEATURE_NAMES,
     TRUMP_COUNT_FEATURE_NAMES,
     card_features,
@@ -37,20 +39,23 @@ def zero_theta(feature_names: Sequence[str] = FEATURE_NAMES) -> tuple[float, ...
 
 
 # Hand-tuned profiles used to generate synthetic data.
-RANDOM_THETA = zero_theta()
+RANDOM_THETA = zero_theta(CORE_FEATURE_NAMES)
 AGGRESSIVE_THETA = theta_from_weights(
+    CORE_FEATURE_NAMES,
     is_trump=0.4,
     points_normalized=1.4,
     wins_current_trick=2.2,
     lowest_card_in_suit=-0.2,
 )
 CONSERVATIVE_THETA = theta_from_weights(
+    CORE_FEATURE_NAMES,
     is_trump=-1.8,
     points_normalized=-1.1,
     wins_current_trick=0.7,
     lowest_card_in_suit=1.2,
 )
 GREEDY_POINTS_THETA = theta_from_weights(
+    CORE_FEATURE_NAMES,
     is_trump=0.1,
     points_normalized=3.0,
     wins_current_trick=0.4,
@@ -182,6 +187,40 @@ EXTENDED_GREEDY_POINTS_THETA = theta_from_weights(
     current_trick_points_normalized=0.2,
 )
 
+INTERACTIVE_RANDOM_THETA = zero_theta(INTERACTIVE_FEATURE_NAMES)
+INTERACTIVE_AGGRESSIVE_THETA = theta_from_weights(
+    INTERACTIVE_FEATURE_NAMES,
+    is_trump=0.4,
+    points_normalized=1.4,
+    wins_current_trick=2.2,
+    lowest_card_in_suit=-0.2,
+    trump_progress=-1.0, 
+    points_progress=-1.5, 
+    trump_on_table_points=1.0,
+    greedy_take=1.5,
+)
+INTERACTIVE_CONSERVATIVE_THETA = theta_from_weights(
+    INTERACTIVE_FEATURE_NAMES,
+    is_trump=-1.8,
+    points_normalized=-1.1,
+    wins_current_trick=0.7,
+    lowest_card_in_suit=1.2,
+    trump_progress=2.0, 
+    points_progress=1.5, 
+    trump_on_table_points=-1.0, 
+    greedy_take=0.2,
+)
+INTERACTIVE_GREEDY_POINTS_THETA = theta_from_weights(
+    INTERACTIVE_FEATURE_NAMES,
+    is_trump=0.5,
+    points_normalized=0.2,
+    wins_current_trick=1.2,
+    lowest_card_in_suit=1.0,
+    trump_progress=0.0,
+    points_progress=0.0,
+    trump_on_table_points=3.0, 
+    greedy_take=3.5, 
+)
 
 class OpponentModel(Protocol):
     """Interface shared by synthetic move generators"""
