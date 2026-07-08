@@ -136,8 +136,7 @@ inference/
   vi.py                 Sequential likelihood and variational inference.
 
 scripts/
-  run_validation.py     One complete validation run.
-  run_comparison.py     Grid comparison over settings.
+  run_experiment.py     Single validation runs and comparison grids.
 
 tests/
   test_*.py             Unit tests.
@@ -154,7 +153,7 @@ python3 -m unittest
 This command runs one synthetic experiment with the default feature set:
 
 ```bash
-python3 scripts/run_validation.py \
+python3 scripts/run_experiment.py single \
   --num-games 100 \
   --feature-set style \
   --profile greedy_points \
@@ -189,7 +188,7 @@ This repeats the same validation pipeline across feature sets, profiles, and
 seeds:
 
 ```bash
-python3 scripts/run_comparison.py \
+python3 scripts/run_experiment.py compare \
   --feature-sets style core compact trump_count extended \
   --profiles aggressive conservative greedy_points \
   --seeds 0 1 2 \
@@ -199,8 +198,8 @@ python3 scripts/run_comparison.py \
   --jobs 4
 ```
 
-`run_comparison.py` does not use a different inference method. Each run follows
-the same sequential VI pipeline as `run_validation.py`; the script only repeats
+The `compare` command does not use a different inference method. Each run
+follows the same sequential VI pipeline as `single`; the command only repeats
 that pipeline over several configurations and summarizes the results.
 
 Outputs are written under `artifacts/comparison/`. The run CSV is written
