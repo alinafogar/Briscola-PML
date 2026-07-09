@@ -87,7 +87,7 @@ p(D \mid \theta)p(\theta)
 $$
 
 
----
+
 
 ## 4. Feature-Based Softmax Policy
 
@@ -126,7 +126,7 @@ This is a modelling assumption. We are not claiming that real players compute a
 linear score. We use this form because it is interpretable, differentiable, and
 small enough to fit from limited data.
 
----
+
 
 ## 5. Current Feature Sets
 
@@ -159,7 +159,7 @@ the current trick:
 - `trump_on_table_points`: trump use when points are already on the table;
 - `greedy_take`: winning the current trick when points are on the table.
 
----
+
 
 ## 6. Synthetic Style Profiles
 
@@ -207,7 +207,7 @@ The current `interaction` vectors are:
 These profiles are only used to generate controlled synthetic data. During
 inference, the code sees the observations, not the true vector.
 
----
+
 
 ## 7. Hidden-Hand Marginalization
 
@@ -232,7 +232,6 @@ removes cards that are known not to be in the opponent hand, including the
 observer's hand, cards already played, cards currently in the trick, and the
 trump card if it is still publicly in the stock.
 
----
 
 ## 8. Sequential Hand Belief
 
@@ -299,7 +298,7 @@ If the next public hand size implies that the opponent must have drawn new
 unknown cards, we enumerate all compatible ways to fill the hand and assign them
 equal weight. This way, the filter is "exact" over the candidate hands it represents.
 
----
+
 
 ## 9. Sequential Likelihood
 
@@ -337,7 +336,6 @@ $$
 
 This is the likelihood used for training and for test evaluation.
 
----
 
 ## 10. Prior and Posterior
 
@@ -371,7 +369,7 @@ p(\theta \mid D)
 p_{\mathrm{seq}}(D \mid \theta)p(\theta)
 $$
 
----
+
 
 ## 11. Variational Inference
 
@@ -458,7 +456,7 @@ $$
 At each VI step, Adam uses the current stochastic gradient estimate to update
 $\mu$ and $\log\sigma$.
 
----
+
 
 ## 12. Posterior Predictive Test Scoring
 
@@ -499,7 +497,6 @@ With all scores equal, this baseline plays uniformly over the candidate hand in
 the local softmax. It still uses the same sequential hidden-hand likelihood for
 the hand belief.
 
----
 
 ## 13. Train/Test Split
 
@@ -513,7 +510,6 @@ The default train fraction is 75%.
 The test set is used only after inference to
 measure predictive performance.
 
----
 
 ## 14. Validation Metrics
 
@@ -541,7 +537,6 @@ model relative to the zero-theta baseline. For example, a value of `1.06` means
 about a 6% per-move probability improvement on the test set.
 
 
----
 
 ## References
 
