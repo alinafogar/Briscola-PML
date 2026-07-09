@@ -21,8 +21,8 @@ from opponents import (
     AGGRESSIVE_THETA,
     CORE_FEATURE_NAMES,
     GREEDY_POINTS_THETA,
-    INTERACTIVE_AGGRESSIVE_THETA,
-    INTERACTIVE_FEATURE_NAMES,
+    INTERACTION_AGGRESSIVE_THETA,
+    INTERACTION_FEATURE_NAMES,
     RANDOM_THETA,
     RandomOpponent,
     ThetaSoftmaxOpponent,
@@ -93,7 +93,7 @@ class ProjectTest(unittest.TestCase):
         self.assertTrue(all(move.chosen_card in move.legal_cards for move in result.observations))
         self.assertEqual(len(observations), 40)
 
-    def test_interactive_features_feed_the_softmax_opponent(self) -> None:
+    def test_interaction_features_feed_the_softmax_opponent(self) -> None:
         game = BriscolaGame.from_deck(
             deck_with_prefix(
                 [
@@ -108,25 +108,26 @@ class ProjectTest(unittest.TestCase):
             ),
             first_player=0,
         )
-        view = game.player_view(0)
+        game.play_card(0, Card(Rank.ACE, Suit.CUPS))
+        view = game.player_view(1)
 
         features = card_features(
             view.hand[0],
             view.hand,
             view.public_state,
-            player=0,
-            feature_names=INTERACTIVE_FEATURE_NAMES,
+            player=1,
+            feature_names=INTERACTION_FEATURE_NAMES,
         )
         probabilities = ThetaSoftmaxOpponent(
-            INTERACTIVE_AGGRESSIVE_THETA,
-            feature_names=INTERACTIVE_FEATURE_NAMES,
+            INTERACTION_AGGRESSIVE_THETA,
+            feature_names=INTERACTION_FEATURE_NAMES,
         ).probabilities(view)
 
-        self.assertEqual(len(features), len(INTERACTIVE_AGGRESSIVE_THETA))
+        self.assertEqual(len(features), len(INTERACTION_AGGRESSIVE_THETA))
         self.assertAlmostEqual(sum(probabilities.values()), 1.0)
         self.assertGreater(
-            probabilities[Card(Rank.ACE, Suit.CUPS)],
-            probabilities[Card(Rank.TWO, Suit.SWORDS)],
+            probabilities[Card(Rank.THREE, Suit.COINS)],
+            probabilities[Card(Rank.FIVE, Suit.CUPS)],
         )
 
     def test_hidden_hand_belief_enumerates_compatible_hands(self) -> None:
