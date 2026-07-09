@@ -32,16 +32,12 @@ interpretable latent playing style from partially observed play.
 
 We represent the opponent's style with a parameter vector
 
-$$
-\theta \in \mathbb{R}^d
-$$
+$$ \theta \in \mathbb{R}^d $$
 
 Given observations from one or more games, we infer a posterior distribution
 over this vector:
 
-$$
-p(\theta \mid D)
-$$
+$$ p(\theta \mid D) $$
 
 This posterior represents which playing styles remain plausible after observing
 the opponent's actions.
@@ -80,44 +76,26 @@ they assign to the observed move sequence.
 For each candidate value of $\theta$, the model defines a likelihood for the
 observed opponent actions. Bayes' rule combines this likelihood with a prior:
 
-$$
-p(\theta \mid D)
-\propto
-p(D \mid \theta)p(\theta)
-$$
+$$ p(\theta \mid D) \propto p(D \mid \theta)p(\theta) $$
 
 
----
+
 
 ## 4. Feature-Based Softmax Policy
 
 For a candidate card $x$, candidate hidden hand $H_t$, and observer information
 $I_t$, we compute a feature vector
 
-$$
-\phi(x,H_t,I_t) \in \mathbb{R}^d
-$$
+$$ \phi(x,H_t,I_t) \in \mathbb{R}^d $$
 
 The card score is linear in the feature vector:
 
-$$
-s_\theta(x;H_t,I_t)
-=
-\theta^\top \phi(x,H_t,I_t)
-$$
+$$ s_\theta(x;H_t,I_t) = \theta^\top \phi(x,H_t,I_t) $$
 
 If the opponent's hand were known, the probability of playing card $x$ would be
 a softmax over the legal cards in that hand:
 
-$$
-p(c_t = x \mid H_t,I_t,\theta)
-=
-\frac{
-\exp(s_\theta(x;H_t,I_t)/\tau)
-}{
-\sum_{x' \in H_t}\exp(s_\theta(x';H_t,I_t)/\tau)
-}
-$$
+$$ p(c_t = x \mid H_t,I_t,\theta) = \frac{ \exp(s_\theta(x;H_t,I_t)/\tau) }{ \sum_{x' \in H_t}\exp(s_\theta(x';H_t,I_t)/\tau) } $$
 
 The temperature $\tau>0$ controls how sharply the synthetic opponent follows
 the scores. In the default validation runs, $\tau=1$.
@@ -126,7 +104,7 @@ This is a modelling assumption. We are not claiming that real players compute a
 linear score. We use this form because it is interpretable, differentiable, and
 small enough to fit from limited data.
 
----
+
 
 ## 5. Current Feature Sets
 
@@ -159,7 +137,7 @@ the current trick:
 - `trump_on_table_points`: trump use when points are already on the table;
 - `greedy_take`: winning the current trick when points are on the table.
 
----
+
 
 ## 6. Synthetic Style Profiles
 
@@ -172,12 +150,7 @@ vectors. The profiles we use are:
 
 For `core`, the feature order is:
 
-$$
-(\texttt{is\_trump},
-\texttt{points\_normalized},
-\texttt{wins\_current\_trick},
-\texttt{lowest\_card\_in\_suit})
-$$
+`is_trump`, `points_normalized`, `wins_current_trick`, `lowest_card_in_suit`.
 
 The current `core` vectors are:
 
@@ -189,12 +162,7 @@ The current `core` vectors are:
 
 For `interaction`, the feature order is:
 
-$$
-(\texttt{trump\_progress},
-\texttt{points\_progress},
-\texttt{trump\_on\_table\_points},
-\texttt{greedy\_take})
-$$
+`trump_progress`, `points_progress`, `trump_on_table_points`, `greedy_take`.
 
 The current `interaction` vectors are:
 
@@ -207,7 +175,7 @@ The current `interaction` vectors are:
 These profiles are only used to generate controlled synthetic data. During
 inference, the code sees the observations, not the true vector.
 
----
+
 
 ## 7. Hidden-Hand Marginalization
 
@@ -218,13 +186,7 @@ used by the belief.
 Let $\mathcal{H}_t$ be the set of compatible hands before move $t$. A local
 hidden-hand likelihood has the form:
 
-$$
-p(c_t \mid I_t,\theta)
-=
-\sum_{H \in \mathcal{H}_t}
-b_t(H)\,
-p(c_t \mid H,I_t,\theta)
-$$
+$$ p(c_t \mid I_t,\theta) = \sum_{H \in \mathcal{H}_t} b_t(H)\, p(c_t \mid H,I_t,\theta) $$
 
 Here $b_t(H)$ is the belief weight assigned to candidate hand $H$. Candidate
 hands are built from cards that could still belong to the opponent. The helper
@@ -232,7 +194,6 @@ removes cards that are known not to be in the opponent hand, including the
 observer's hand, cards already played, cards currently in the trick, and the
 trump card if it is still publicly in the stock.
 
----
 
 ## 8. Sequential Hand Belief
 
@@ -242,26 +203,12 @@ hands through the observed moves of the same game.
 At the first observed move of a game, the belief is uniform over compatible
 hands:
 
-$$
-b_1(H)
-=
-\frac{1}{|\mathcal{H}_1|},
-\qquad
-H \in \mathcal{H}_1
-$$
+$$ b_1(H) = \frac{1}{|\mathcal{H}_1|}, \qquad H \in \mathcal{H}_1 $$
 
 For a later move, the belief already contains information from previous
 observed actions. The likelihood contribution of the observed card is:
 
-$$
-\ell_t(\theta)
-=
-p(c_t \mid I_{\le t},c_{<t},\theta)
-=
-\sum_{H \in \mathcal{H}_t}
-b_t(H;\theta)\,
-p(c_t \mid H,I_t,\theta)
-$$
+$$ \ell_t(\theta) = p(c_t \mid I_{1:t},c_{1:t-1},\theta) = \sum_{H \in \mathcal{H}_t} b_t(H;\theta)\, p(c_t \mid H,I_t,\theta) $$
 
 The notation $b_t(H;\theta)$ is intentional. After the first move, the belief
 depends on $\theta$: a candidate hand receives more posterior mass if it makes
@@ -270,16 +217,7 @@ the previously observed actions more likely under that style.
 After observing $c_t$, the belief over hands that could have produced the move
 is updated by Bayes' rule:
 
-$$
-\bar b_t(H;\theta)
-=
-\frac{
-b_t(H;\theta)\,
-p(c_t \mid H,I_t,\theta)
-}{
-\ell_t(\theta)
-}
-$$
+$$ \bar b_t(H;\theta) = \frac{ b_t(H;\theta)\, p(c_t \mid H,I_t,\theta) }{ \ell_t(\theta) } $$
 
 Hands that do not contain the observed card contribute zero probability.
 
@@ -287,19 +225,14 @@ The model then transitions to the next decision point by removing the played
 card and filling any missing cards with uniformly weighted compatible
 completions:
 
-$$
-b_{t+1}(H';\theta)
-=
-\sum_H
-\bar b_t(H;\theta)T_t(H' \mid H)
-$$
+$$ b_{t+1}(H';\theta) = \sum_H \bar b_t(H;\theta)T_t(H' \mid H) $$
 
 After an observed move, we remove the played card from each candidate hand.
 If the next public hand size implies that the opponent must have drawn new
 unknown cards, we enumerate all compatible ways to fill the hand and assign them
 equal weight. This way, the filter is "exact" over the candidate hands it represents.
 
----
+
 
 ## 9. Sequential Likelihood
 
@@ -309,79 +242,44 @@ connected by the sequential hand belief.
 
 For one game:
 
-$$
-p_{\mathrm{seq}}(D_g \mid \theta)
-=
-\prod_{t=1}^{T_g}
-\ell_{g,t}(\theta)
-$$
+$$ p_{\mathrm{seq}}(D_g \mid \theta) = \prod_{t=1}^{T_g} \ell_{g,t}(\theta) $$
 
 For several games:
 
-$$
-p_{\mathrm{seq}}(D \mid \theta)
-=
-\prod_g
-p_{\mathrm{seq}}(D_g \mid \theta)
-$$
+$$ p_{\mathrm{seq}}(D \mid \theta) = \prod_g p_{\mathrm{seq}}(D_g \mid \theta) $$
 
 In log form:
 
-$$
-\log p_{\mathrm{seq}}(D \mid \theta)
-=
-\sum_g
-\sum_{t=1}^{T_g}
-\log \ell_{g,t}(\theta)
-$$
+$$ \log p_{\mathrm{seq}}(D \mid \theta) = \sum_g \sum_{t=1}^{T_g} \log \ell_{g,t}(\theta) $$
 
 This is the likelihood used for training and for test evaluation.
 
----
 
 ## 10. Prior and Posterior
 
 The prior over playing style is a zero-mean diagonal Gaussian:
 
-$$
-\theta \sim \mathcal{N}(0,\sigma_0^2 I)
-$$
+$$ \theta \sim \mathcal{N}(0,\sigma_0^2 I) $$
 
 The default is $\sigma_0=1$, and `run_experiment.py` exposes this as
 `--prior-std`.
 
 Bayes' rule gives:
 
-$$
-p(\theta \mid D)
-=
-\frac{
-p_{\mathrm{seq}}(D \mid \theta)p(\theta)
-}{
-p(D)
-}
-$$
+$$ p(\theta \mid D) = \frac{ p_{\mathrm{seq}}(D \mid \theta)p(\theta) }{ p(D) } $$
 
 Since the evidence $p(D)$ is not available in closed form, we work with
 the unnormalized posterior:
 
-$$
-p(\theta \mid D)
-\propto
-p_{\mathrm{seq}}(D \mid \theta)p(\theta)
-$$
+$$ p(\theta \mid D) \propto p_{\mathrm{seq}}(D \mid \theta)p(\theta) $$
 
----
+
 
 ## 11. Variational Inference
 
 The posterior is approximated with a diagonal Gaussian:
 
-$$
-q_\lambda(\theta)
-=
-\mathcal{N}(\mu,\operatorname{diag}(\sigma^2))
-$$
+$$ q_\lambda(\theta) = \mathcal{N}(\mu,\mathrm{diag}(\sigma^2)) $$
 
 The learned quantities are:
 
@@ -392,52 +290,23 @@ The learned quantities are:
 In the implementation, the optimized parameters are the mean vector and the
 log-standard-deviation vector:
 
-$$
-\lambda = (\mu,\log\sigma)
-$$
+$$ \lambda = (\mu,\log\sigma) $$
 
 We optimize $\log\sigma$ rather than $\sigma$ directly so that the recovered
 standard deviations are always positive after exponentiation.
 
 The ELBO optimized by the code is:
 
-$$
-\mathcal{L}(\lambda)
-=
-\mathbb{E}_{q_\lambda(\theta)}
-\left[
-\log p_{\mathrm{seq}}(D_{\mathrm{train}} \mid \theta)
-\right]
--
-D_{\mathrm{KL}}
-\left(
-q_\lambda(\theta)
-\|p(\theta)
-\right)
-$$
+$$ \mathcal{L}(\lambda) = \mathbb{E}_{q_\lambda(\theta)} \left[ \log p_{\mathrm{seq}}(D_{\mathrm{train}} \mid \theta) \right] - D_{\mathrm{KL}} \left( q_\lambda(\theta) \|p(\theta) \right) $$
 
 The expectation is estimated with reparameterized Monte Carlo samples:
 
-$$
-\epsilon \sim \mathcal{N}(0,I),
-\qquad
-\theta = \mu + \sigma\odot\epsilon
-$$
+$$ \epsilon \sim \mathcal{N}(0,I), \qquad \theta = \mu + \sigma\odot\epsilon $$
 
 For one VI step with $S$ ELBO samples, the
 code estimates the expected log-likelihood as:
 
-$$
-\frac{1}{S}
-\sum_{s=1}^{S}
-\log p_{\mathrm{seq}}
-\left(
-D_{\mathrm{train}} \mid
-\mu+\sigma\odot\epsilon^{(s)}
-\right),
-\qquad
-\epsilon^{(s)} \sim \mathcal{N}(0,I)
-$$
+$$ \frac{1}{S} \sum_{s=1}^{S} \log p_{\mathrm{seq}} \left( D_{\mathrm{train}} \mid \mu+\sigma\odot\epsilon^{(s)} \right), \qquad \epsilon^{(s)} \sim \mathcal{N}(0,I) $$
 
 The KL term is computed analytically for the diagonal Gaussian posterior and
 Gaussian prior. The stochastic part of the objective is therefore only the
@@ -449,40 +318,23 @@ step to estimate the expected log-likelihood.
 The variational parameters are optimized with Adam. Since the code minimizes
 losses, it performs gradient descent on the negative ELBO:
 
-$$
-\operatorname{loss}(\lambda)
-=
--\mathcal{L}(\lambda)
-$$
+$$ \mathrm{loss}(\lambda) = -\mathcal{L}(\lambda) $$
 
 At each VI step, Adam uses the current stochastic gradient estimate to update
 $\mu$ and $\log\sigma$.
 
----
+
 
 ## 12. Posterior Predictive Test Scoring
 
 After fitting $q(\theta)$ on the training games, the code evaluates prediction
 on test games with posterior predictive averaging. It samples:
 
-$$
-\theta^{(s)} \sim q_\lambda(\theta),
-\qquad
-s=1,\dots,S
-$$
+$$ \theta^{(s)} \sim q_\lambda(\theta), \qquad s=1,\dots,S $$
 
 and estimates:
 
-$$
-\log p(D_{\mathrm{test}} \mid D_{\mathrm{train}})
-\approx
-\log
-\left(
-\frac{1}{S}
-\sum_{s=1}^{S}
-p_{\mathrm{seq}}(D_{\mathrm{test}} \mid \theta^{(s)})
-\right)
-$$
+$$ \log p(D_{\mathrm{test}} \mid D_{\mathrm{train}}) \approx \log \left( \frac{1}{S} \sum_{s=1}^{S} p_{\mathrm{seq}}(D_{\mathrm{test}} \mid \theta^{(s)}) \right) $$
 
 We compute this with a numerically stable log-mean-exp over
 the sequential test log-likelihoods.
@@ -491,15 +343,12 @@ The flag `--posterior-samples` controls $S$.
 
 The baseline for test comparison is the zero-theta model:
 
-$$
-\theta = 0
-$$
+$$ \theta = 0 $$
 
 With all scores equal, this baseline plays uniformly over the candidate hand in
 the local softmax. It still uses the same sequential hidden-hand likelihood for
 the hand belief.
 
----
 
 ## 13. Train/Test Split
 
@@ -513,7 +362,6 @@ The default train fraction is 75%.
 The test set is used only after inference to
 measure predictive performance.
 
----
 
 ## 14. Validation Metrics
 
@@ -530,18 +378,16 @@ The current validation reports track both recovery and prediction.
 | `final_elbo` | final variational objective value | useful mainly within comparable runs |
 
 
-In the notebook we also use a probability multiplier:
+In the notebook we also use a probability multiplier. Let `m` be
+`test_mean_logp_delta`; then the multiplier is:
 
-$$
-\exp(\texttt{test\_mean\_logp\_delta})
-$$
+$$ \exp(m) $$
 
 This is the probability ratio of the posterior predictive
 model relative to the zero-theta baseline. For example, a value of `1.06` means
 about a 6% per-move probability improvement on the test set.
 
 
----
 
 ## References
 
