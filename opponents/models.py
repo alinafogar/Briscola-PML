@@ -67,8 +67,8 @@ INTERACTIVE_AGGRESSIVE_THETA = theta_from_weights(
     lowest_card_in_suit=-0.2,
     trump_progress=-1.0,
     points_progress=-1.5,
-    trump_on_table_points=1.0,
-    greedy_take=1.5,
+    trump_on_table_points=2.0,
+    greedy_take=3.0,
 )
 INTERACTIVE_CONSERVATIVE_THETA = theta_from_weights(
     INTERACTIVE_FEATURE_NAMES,
@@ -83,14 +83,14 @@ INTERACTIVE_CONSERVATIVE_THETA = theta_from_weights(
 )
 INTERACTIVE_GREEDY_POINTS_THETA = theta_from_weights(
     INTERACTIVE_FEATURE_NAMES,
-    is_trump=0.5,
-    points_normalized=0.2,
-    wins_current_trick=1.2,
-    lowest_card_in_suit=1.0,
-    trump_progress=0.0,
-    points_progress=0.0,
-    trump_on_table_points=3.0,
-    greedy_take=3.5,
+    is_trump=0.1,
+    points_normalized=3.0,
+    wins_current_trick=0.4,
+    lowest_card_in_suit=-0.2,
+    trump_progress=-0.1,
+    points_progress=-2.0,
+    trump_on_table_points=0.5,
+    greedy_take=1.0,
 )
 
 
