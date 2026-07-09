@@ -150,7 +150,7 @@ vectors. The profiles we use are:
 
 For `core`, the feature order is:
 
-$$ (\texttt{is\_trump}, \texttt{points\_normalized}, \texttt{wins\_current\_trick}, \texttt{lowest\_card\_in\_suit}) $$
+$$ (\mathrm{is\_trump}, \mathrm{points\_normalized}, \mathrm{wins\_current\_trick}, \mathrm{lowest\_card\_in\_suit}) $$
 
 The current `core` vectors are:
 
