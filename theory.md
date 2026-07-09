@@ -150,7 +150,7 @@ vectors. The profiles we use are:
 
 For `core`, the feature order is:
 
-$$ (\mathrm{is\_trump}), (\mathrm{points\_normalized}), (\mathrm{wins\_current\_trick}), (\mathrm{lowest\_card\_in\_suit}) $$
+`is_trump`, `points_normalized`, `wins_current_trick`, `lowest_card_in_suit`.
 
 The current `core` vectors are:
 
@@ -162,7 +162,7 @@ The current `core` vectors are:
 
 For `interaction`, the feature order is:
 
-$$ (\mathrm{trump\_progress}), (\mathrm{points\_progress}), (\mathrm{trump\_on\_table\_points}), (\mathrm{greedy\_take}) $$
+`trump_progress`, `points_progress`, `trump_on_table_points`, `greedy_take`.
 
 The current `interaction` vectors are:
 
@@ -208,7 +208,7 @@ $$ b_1(H) = \frac{1}{|\mathcal{H}_1|}, \qquad H \in \mathcal{H}_1 $$
 For a later move, the belief already contains information from previous
 observed actions. The likelihood contribution of the observed card is:
 
-$$ \ell_t(\theta) = p(c_t \mid I_{\le t},c_{<t},\theta) = \sum_{H \in \mathcal{H}_t} b_t(H;\theta)\, p(c_t \mid H,I_t,\theta) $$
+$$ \ell_t(\theta) = p(c_t \mid I_{1:t},c_{1:t-1},\theta) = \sum_{H \in \mathcal{H}_t} b_t(H;\theta)\, p(c_t \mid H,I_t,\theta) $$
 
 The notation $b_t(H;\theta)$ is intentional. After the first move, the belief
 depends on $\theta$: a candidate hand receives more posterior mass if it makes
@@ -279,7 +279,7 @@ $$ p(\theta \mid D) \propto p_{\mathrm{seq}}(D \mid \theta)p(\theta) $$
 
 The posterior is approximated with a diagonal Gaussian:
 
-$$ q_\lambda(\theta) = \mathcal{N}(\mu,\operatorname{diag}(\sigma^2)) $$
+$$ q_\lambda(\theta) = \mathcal{N}(\mu,\mathrm{diag}(\sigma^2)) $$
 
 The learned quantities are:
 
@@ -318,7 +318,7 @@ step to estimate the expected log-likelihood.
 The variational parameters are optimized with Adam. Since the code minimizes
 losses, it performs gradient descent on the negative ELBO:
 
-$$ \operatorname{loss}(\lambda) = -\mathcal{L}(\lambda) $$
+$$ \mathrm{loss}(\lambda) = -\mathcal{L}(\lambda) $$
 
 At each VI step, Adam uses the current stochastic gradient estimate to update
 $\mu$ and $\log\sigma$.
@@ -378,9 +378,10 @@ The current validation reports track both recovery and prediction.
 | `final_elbo` | final variational objective value | useful mainly within comparable runs |
 
 
-In the notebook we also use a probability multiplier:
+In the notebook we also use a probability multiplier. Let `m` be
+`test_mean_logp_delta`; then the multiplier is:
 
-$$ \exp(\texttt{test\_mean\_logp\_delta}) $$
+$$ \exp(m) $$
 
 This is the probability ratio of the posterior predictive
 model relative to the zero-theta baseline. For example, a value of `1.06` means
