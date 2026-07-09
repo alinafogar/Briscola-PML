@@ -11,7 +11,7 @@ from game import Card, PlayerView
 from opponents.features import (
     CORE_FEATURE_NAMES,
     FEATURE_NAMES,
-    INTERACTIVE_FEATURE_NAMES,
+    INTERACTION_FEATURE_NAMES,
     card_features,
 )
 
@@ -58,35 +58,23 @@ GREEDY_POINTS_THETA = theta_from_weights(
     lowest_card_in_suit=-0.2,
 )
 
-INTERACTIVE_RANDOM_THETA = zero_theta(INTERACTIVE_FEATURE_NAMES)
-INTERACTIVE_AGGRESSIVE_THETA = theta_from_weights(
-    INTERACTIVE_FEATURE_NAMES,
-    is_trump=0.4,
-    points_normalized=1.4,
-    wins_current_trick=2.2,
-    lowest_card_in_suit=-0.2,
+INTERACTION_RANDOM_THETA = zero_theta(INTERACTION_FEATURE_NAMES)
+INTERACTION_AGGRESSIVE_THETA = theta_from_weights(
+    INTERACTION_FEATURE_NAMES,
     trump_progress=-1.0,
     points_progress=-1.5,
     trump_on_table_points=2.0,
     greedy_take=3.0,
 )
-INTERACTIVE_CONSERVATIVE_THETA = theta_from_weights(
-    INTERACTIVE_FEATURE_NAMES,
-    is_trump=-1.8,
-    points_normalized=-1.1,
-    wins_current_trick=0.7,
-    lowest_card_in_suit=1.2,
-    trump_progress=2.0,
+INTERACTION_CONSERVATIVE_THETA = theta_from_weights(
+    INTERACTION_FEATURE_NAMES,
+    trump_progress=1.5,
     points_progress=1.5,
-    trump_on_table_points=-1.0,
-    greedy_take=0.2,
+    trump_on_table_points=-0.5,
+    greedy_take=-1.0,
 )
-INTERACTIVE_GREEDY_POINTS_THETA = theta_from_weights(
-    INTERACTIVE_FEATURE_NAMES,
-    is_trump=0.1,
-    points_normalized=3.0,
-    wins_current_trick=0.4,
-    lowest_card_in_suit=-0.2,
+INTERACTION_GREEDY_POINTS_THETA = theta_from_weights(
+    INTERACTION_FEATURE_NAMES,
     trump_progress=-0.1,
     points_progress=-2.0,
     trump_on_table_points=0.5,

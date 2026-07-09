@@ -90,20 +90,18 @@ We keep it as the default because it is compact and easy to interpret. It
 captures whether a card is a trump, how many points it has, whether it wins the
 current trick, and whether it is the lowest card of its suit in hand.
 
-The other available set is `interactive`:
+The other available set is `interaction`:
 
 ```text
-is_trump
-points_normalized
-wins_current_trick
-lowest_card_in_suit
 trump_progress
 points_progress
 trump_on_table_points
 greedy_take
 ```
 
-It extends `core` with interaction terms that depend on the current game state.
+It keeps only context-dependent interaction terms. We use it to check whether
+state interactions alone can explain an opponent style, without the direct core
+features.
 
 The synthetic opponent profiles are:
 
@@ -183,7 +181,7 @@ seeds:
 
 ```bash
 python3 run_experiment.py compare \
-  --feature-sets core interactive \
+  --feature-sets core interaction \
   --profiles aggressive conservative greedy_points \
   --seeds 0 1 2 \
   --num-games 20 \

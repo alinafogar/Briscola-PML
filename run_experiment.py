@@ -28,10 +28,10 @@ from opponents import (  # noqa: E402
     CONSERVATIVE_THETA,
     CORE_FEATURE_NAMES,
     GREEDY_POINTS_THETA,
-    INTERACTIVE_AGGRESSIVE_THETA,
-    INTERACTIVE_CONSERVATIVE_THETA,
-    INTERACTIVE_FEATURE_NAMES,
-    INTERACTIVE_GREEDY_POINTS_THETA,
+    INTERACTION_AGGRESSIVE_THETA,
+    INTERACTION_CONSERVATIVE_THETA,
+    INTERACTION_FEATURE_NAMES,
+    INTERACTION_GREEDY_POINTS_THETA,
     RandomOpponent,
     ThetaSoftmaxOpponent,
 )
@@ -39,7 +39,7 @@ from opponents import (  # noqa: E402
 
 FEATURE_SETS = {
     "core": CORE_FEATURE_NAMES,
-    "interactive": INTERACTIVE_FEATURE_NAMES,
+    "interaction": INTERACTION_FEATURE_NAMES,
 }
 
 THETA_PROFILES = {
@@ -48,14 +48,14 @@ THETA_PROFILES = {
         "conservative": CONSERVATIVE_THETA,
         "greedy_points": GREEDY_POINTS_THETA,
     },
-    "interactive": {
-        "aggressive": INTERACTIVE_AGGRESSIVE_THETA,
-        "conservative": INTERACTIVE_CONSERVATIVE_THETA,
-        "greedy_points": INTERACTIVE_GREEDY_POINTS_THETA,
+    "interaction": {
+        "aggressive": INTERACTION_AGGRESSIVE_THETA,
+        "conservative": INTERACTION_CONSERVATIVE_THETA,
+        "greedy_points": INTERACTION_GREEDY_POINTS_THETA,
     },
 }
 
-DEFAULT_FEATURE_SETS = ("core", "interactive")
+DEFAULT_FEATURE_SETS = ("core", "interaction")
 DEFAULT_PROFILES = ("aggressive", "conservative", "greedy_points")
 DEFAULT_TRAIN_FRACTION = 0.75
 DEFAULT_LEARNING_RATE = 0.03

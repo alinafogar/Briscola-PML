@@ -16,18 +16,14 @@ CORE_FEATURE_NAMES: tuple[str, ...] = (
     "lowest_card_in_suit",
 )
 
-INTERACTIVE_FEATURE_NAMES: tuple[str, ...] = (
-    "is_trump",
-    "points_normalized",
-    "wins_current_trick",
-    "lowest_card_in_suit",
+INTERACTION_FEATURE_NAMES: tuple[str, ...] = (
     "trump_progress",
     "points_progress",
     "trump_on_table_points",
     "greedy_take",
 )
 
-FEATURE_NAMES = INTERACTIVE_FEATURE_NAMES
+FEATURE_NAMES = INTERACTION_FEATURE_NAMES
 
 
 def card_features(
