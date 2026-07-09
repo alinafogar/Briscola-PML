@@ -113,9 +113,7 @@ python3 run_experiment.py single \
   --num-games 50 \
   --feature-set core \
   --profile aggressive \
-  --opponent-temperature 1.0 \
   --vi-steps 150 \
-  --elbo-samples 2 \
   --posterior-samples 50 \
   --output artifacts/validation_report.json
 ```
@@ -130,9 +128,6 @@ The report tells us:
 
 Useful flags:
 
-- `--opponent-temperature` controls how deterministic the synthetic opponent's
-  softmax policy is. Lower values make the opponent follow its preferences more
-  sharply.
 - `--prior-std` changes the width of the Gaussian prior over `theta`.
 - `--vi-steps` controls how long we optimize the variational posterior.
 - `--posterior-samples` controls how many theta samples from `q(theta)` we use
@@ -153,7 +148,6 @@ python3 run_experiment.py compare \
   --profiles aggressive conservative greedy_points \
   --seeds 0 1 2 \
   --num-games 20 \
-  --opponent-temperature 1.0 \
   --vi-steps 150 \
   --posterior-samples 20 \
   --jobs 4
