@@ -12,6 +12,9 @@ inference problem: the opponent has a hidden hand, we only see public
 information and played cards and we want to understand whether we can recover
 an interpretable playing style from partial observations.
 
+Detailed notes on the theory behind our approach can be found in
+[theory.md](theory.md).
+
 ## What We Have Built
 
 At the moment, the project includes:
@@ -20,8 +23,8 @@ At the moment, the project includes:
   order;
 - a public game state and player-specific views;
 - synthetic opponents that choose cards with a softmax model based on `theta`;
-- interpretable card features, such as whether a card is a trump, how many
-  points it has, or whether it wins the current trick;
+- two feature sets, `core` and `interaction`, with profile-specific synthetic
+  theta vectors;
 - synthetic data collection from simulated games;
 - a sequential hand belief that is updated across the moves of the same game;
 - mean-field Gaussian variational inference for `theta`;
@@ -30,54 +33,13 @@ At the moment, the project includes:
   random seeds.
 
 
-## Model
-
-For each observed opponent move, we write:
-
-- `H_t` for the opponent's hidden hand;
-- `I_t` for the public information available at that point;
-- `c_t` for the card the opponent actually plays.
-
-Given a candidate hand and the public state, the opponent chooses a card with a
-softmax policy over the cards in that hand. Here `phi` is the feature vector of
-a candidate card, and `theta` tells us how strongly the opponent cares about
-each feature. For example, a high positive weight on `points_normalized` means
-that the opponent tends to play high-value cards.
-
-During inference we do not know the opponent's hand, so we average over the
-hands that are compatible with the public information.
-
-The important part is `b_t(H)`: our belief over which hands the opponent could
-have. We currently use a sequential hand filter. This means that, within the
-same game, we do not treat every move as independent. After each observed move,
-we update the belief over possible opponent hands and use that updated belief
-for the next move.
-
-## Variational Inference
-
-We approximate the posterior over `theta` with a diagonal Gaussian:
-
-```text
-q(theta) = N(mu, diag(sigma^2))
-```
-
-The code optimizes an ELBO with reparameterization gradients. In practice, this
-means that we learn:
-
-- a posterior mean for every feature weight;
-- a posterior standard deviation for every feature weight;
-- the final posterior after the VI optimization.
-
-The prior over `theta` is a zero-mean Gaussian.
-
-For test evaluation, we use the whole variational posterior rather than
-only its mean. We sample several theta vectors from `q(theta)`, evaluate the
-sequential likelihood for each one, and average those likelihoods in log space.
-This gives us a posterior predictive score for the test games.
-
 ## Feature Sets
 
-The main feature set is `core`:
+We have two feature sets: `core` uses direct card and
+current-trick features; `interaction` keeps only context-dependent terms based
+on game progress and the current trick.
+
+### `core`
 
 ```text
 is_trump
@@ -86,11 +48,15 @@ wins_current_trick
 lowest_card_in_suit
 ```
 
-We keep it as the default because it is compact and easy to interpret. It
-captures whether a card is a trump, how many points it has, whether it wins the
-current trick, and whether it is the lowest card of its suit in hand.
+Current `core` theta vectors:
 
-The other available set is `interaction`:
+| Profile | `theta` |
+|---|---|
+| `aggressive` | `(0.4, 1.4, 2.2, -0.2)` |
+| `conservative` | `(-1.8, -1.1, 0.7, 1.2)` |
+| `greedy_points` | `(0.1, 3.0, 0.4, -0.2)` |
+
+### `interaction`
 
 ```text
 trump_progress
@@ -99,19 +65,20 @@ trump_on_table_points
 greedy_take
 ```
 
-It keeps only context-dependent interaction terms. We use it to check whether
-state interactions alone can explain an opponent style, without the direct core
-features.
+This set keeps only context-dependent interaction terms: late-game trump use,
+late-game point use, trump use when points are already on the table, and taking
+a point-bearing trick.
 
-The synthetic opponent profiles are:
+Current `interaction` theta vectors:
 
-- `aggressive`
-- `conservative`
-- `greedy_points`
+| Profile | `theta` |
+|---|---|
+| `aggressive` | `(-1.0, -1.5, 2.0, 3.0)` |
+| `conservative` | `(1.5, 1.5, -0.5, -1.0)` |
+| `greedy_points` | `(-0.1, -2.0, 0.5, 1.0)` |
 
-These profiles are hand-written theta vectors. We use them to generate data
-where the true parameters are known, so we can check whether inference recovers
-the intended style.
+The profiles are hand-written and used only to generate controlled synthetic
+data where the true parameters are known.
 
 ## Repository Layout
 
@@ -132,6 +99,7 @@ inference/
   beliefs.py            Compatible hidden-hand enumeration.
   vi.py                 Sequential likelihood and variational inference.
 
+theory.md               Detailed model notes.
 run_experiment.py       Single validation runs and comparison grids.
 test.py                 Core project tests.
 ```
@@ -144,7 +112,7 @@ This command runs one synthetic experiment with the default feature set:
 python3 run_experiment.py single \
   --num-games 50 \
   --feature-set core \
-  --profile greedy_points \
+  --profile aggressive \
   --opponent-temperature 1.0 \
   --vi-steps 150 \
   --elbo-samples 2 \
@@ -196,7 +164,7 @@ follows the same sequential VI pipeline as `single`; the command only repeats
 that pipeline over several configurations and summarizes the results.
 
 Outputs are written under `artifacts/comparison/`. The run CSV is written
-incrementally, so we can inspect partial results while a larger comparison is
+incrementally, so it is possible to inspect partial results while a larger comparison is
 still running.
 
 ## Dependencies

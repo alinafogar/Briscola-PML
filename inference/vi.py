@@ -1,4 +1,4 @@
-"""Batch variational inference for theta"""
+"""Variational inference for theta"""
 
 from __future__ import annotations
 

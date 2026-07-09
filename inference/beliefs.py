@@ -37,7 +37,7 @@ def known_opponent_cards(
     *,
     opponent_player: int | None,
 ) -> tuple[Card, ...]:
-    """Publicly known cards that must be in the opponent hand"""
+    """Publicly known cards that must be in the opponent hand, i.e last briscola"""
 
     if opponent_player is None:
         return ()
